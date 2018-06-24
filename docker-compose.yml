@@ -1,0 +1,43 @@
+version: "3"
+services:
+
+  target:
+    container_name: target
+    image: say3no/try_linux
+    tty: true
+    command: watch -n 600 python /root/sar.py
+    volumes:
+      - ./monitor:/root/
+    networks:
+      grafana_net:
+        ipv4_address: 172.50.1.2
+
+  db:
+    container_name: influx
+    image: influxdb:1.5.3
+    ports:
+      - "8086:8086"
+      - "8083:8083"
+    networks:
+      grafana_net:
+        ipv4_address: 172.50.1.3
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:5.1.4
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+    networks:
+      grafana_net:
+        ipv4_address: 172.50.1.4
+
+networks:
+  grafana_net:
+    driver: bridge
+    ipam:
+     driver: default
+     config:
+       - subnet: 172.50.1.0/24
+
